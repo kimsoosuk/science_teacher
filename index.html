@@ -7,12 +7,18 @@
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <script type="module">
@@ -20,57 +26,197 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, onSnapshot, orderBy, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase 설정 (설정값이 없을 경우를 대비한 안전 처리)
-        const firebaseConfig = JSON.parse(window.__firebase_config || '{}');
-        if (firebaseConfig.apiKey) {
-            const app = initializeApp(firebaseConfig);
-            window.auth = getAuth(app);
-            window.db = getFirestore(app);
-            window.signInAnonymously = signInAnonymously;
-            window.signInWithCustomToken = signInWithCustomToken;
-            window.onAuthStateChanged = onAuthStateChanged;
-            window.collection = collection;
-            window.addDoc = addDoc;
-            window.query = query;
-            window.onSnapshot = onSnapshot;
-            window.orderBy = orderBy;
-            window.deleteDoc = deleteDoc;
-            window.doc = doc;
-            window.serverTimestamp = serverTimestamp;
-        }
+        // Initialize Firebase - 아임웹/깃허브 환경에서 에러 방지를 위한 처리 유지
+        try {
+            const firebaseConfig = JSON.parse(window.__firebase_config || '{}');
+            if (firebaseConfig.apiKey) {
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                const db = getFirestore(app);
+
+                window.firebaseApp = app;
+                window.auth = auth;
+                window.db = db;
+                window.signInAnonymously = signInAnonymously;
+                window.signInWithCustomToken = signInWithCustomToken;
+                window.onAuthStateChanged = onAuthStateChanged;
+                window.collection = collection;
+                window.addDoc = addDoc;
+                window.query = query;
+                window.onSnapshot = onSnapshot;
+                window.orderBy = orderBy;
+                window.deleteDoc = deleteDoc;
+                window.doc = doc;
+                window.serverTimestamp = serverTimestamp;
+            }
+        } catch (e) { console.error("Firebase 로드 대기 중..."); }
     </script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        .chat-bubble { position: relative; padding: 0.75rem 0.875rem; border-radius: 1.25rem; line-height: 1.6; margin-bottom: 0.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-size: 0.95rem; width: fit-content; }
-        .chat-bubble.user { background-color: #2563eb; color: white; margin-left: auto; border-bottom-right-radius: 0.25rem; max-width: 85%; word-break: break-word; }
-        .chat-bubble.ai { background-color: white; color: #1f2937; margin-right: auto; border-bottom-left-radius: 0.25rem; border: 1px solid #e2e8f0; max-width: calc(100% - 2.5rem); overflow-x: auto; }
-        @media (min-width: 768px) { .chat-bubble.user { max-width: 75%; } .chat-bubble.ai { max-width: calc(100% - 3.5rem); } }
-        .typing-indicator span { display: inline-block; width: 6px; height: 6px; background-color: #3b82f6; border-radius: 50%; animation: typing 1s infinite ease-in-out; margin: 0 2px; }
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8fafc; /* Slate-50 */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 모바일 스크롤바 숨기기 */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .chat-bubble {
+            position: relative;
+            padding: 0.75rem 0.875rem;
+            border-radius: 1.25rem;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            font-size: 0.95rem; 
+            width: fit-content;
+        }
+
+        .chat-bubble.user {
+            background-color: #2563eb; /* Blue-600 */
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 0.25rem;
+            max-width: 85%; /* 모바일에서 유저 말풍선 최대 너비 */
+            word-break: break-word;
+        }
+
+        .chat-bubble.ai {
+            background-color: white;
+            color: #1f2937;
+            margin-right: auto;
+            border-bottom-left-radius: 0.25rem;
+            border: 1px solid #e2e8f0;
+            max-width: calc(100% - 2.5rem); /* 프로필 이미지 크기를 제외한 나머지 너비 */
+            overflow-x: auto;
+        }
+
+        @media (min-width: 768px) {
+            .chat-bubble.user { max-width: 75%; }
+            .chat-bubble.ai { max-width: calc(100% - 3.5rem); }
+        }
+
+        /* Loading Dots */
+        .typing-indicator span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: #3b82f6;
+            border-radius: 50%;
+            animation: typing 1s infinite ease-in-out;
+            margin: 0 2px;
+        }
+        
         .typing-indicator span:nth-child(1) { animation-delay: 0s; }
         .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
         .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes typing { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-        .ai-content { word-break: keep-all; }
-        .ai-content h1, .ai-content h2, .ai-content h3 { font-weight: 700; color: #1e3a8a; margin-top: 1em; margin-bottom: 0.5em; }
+        
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Markdown Styling */
+        .ai-content {
+            word-break: keep-all;
+        }
+        .ai-content h1, .ai-content h2, .ai-content h3 {
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+        }
         .ai-content h1 { font-size: 1.2em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.2em; }
         .ai-content h2 { font-size: 1.1em; }
+        
         .ai-content p { margin-bottom: 0.8em; }
-        .ai-content ul, .ai-content ol { margin-bottom: 0.8em; padding-left: 1.2em; }
+        .ai-content ul, .ai-content ol {
+            margin-bottom: 0.8em;
+            padding-left: 1.2em;
+        }
         .ai-content ul { list-style-type: disc; }
         .ai-content ol { list-style-type: decimal; }
-        .ai-content strong, .ai-content b { font-weight: 700; color: #2563eb; background-color: #eff6ff; padding: 0 2px; border-radius: 2px; }
-        .ai-content table { width: 100%; border-collapse: collapse; margin: 0.8em 0; font-size: 0.9em; background-color: #fff; border-radius: 0.5rem; border: 1px solid #e2e8f0; display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .ai-content th { background-color: #f8fafc; font-weight: 600; text-align: left; padding: 0.5rem; border: 1px solid #e2e8f0; white-space: nowrap; }
-        .ai-content td { padding: 0.5rem; border: 1px solid #e2e8f0; min-width: 60px; }
-        .ai-content blockquote { border-left: 4px solid #3b82f6; padding-left: 1rem; margin: 1rem 0; color: #4b5563; font-style: italic; background-color: #f1f5f9; padding: 0.5rem 1rem; border-radius: 0.25rem; }
-        .katex-display { overflow-x: auto; overflow-y: hidden; padding: 0.5rem 0; -webkit-overflow-scrolling: touch; }
-        .word-card-export { background: white; padding: 2.5rem; width: 600px; height: auto; position: fixed; top: -9999px; left: -9999px; z-index: -1; border: 1px solid #e5e7eb; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        
+        .ai-content strong, .ai-content b {
+            font-weight: 700;
+            color: #2563eb; 
+            background-color: #eff6ff;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+        
+        .ai-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.8em 0;
+            font-size: 0.9em; 
+            background-color: #fff;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .ai-content th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            text-align: left;
+            padding: 0.5rem;
+            border: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+        .ai-content td {
+            padding: 0.5rem;
+            border: 1px solid #e2e8f0;
+            min-width: 60px;
+        }
+        
+        .ai-content blockquote {
+            border-left: 4px solid #3b82f6;
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: #4b5563;
+            font-style: italic;
+            background-color: #f1f5f9;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+        }
+
+        .katex-display {
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 0.5rem 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .word-card-export {
+            background: white;
+            padding: 2.5rem;
+            width: 600px;
+            height: auto;
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
+            z-index: -1;
+            border: 1px solid #e5e7eb;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
@@ -91,10 +237,10 @@
         const BeakerIcon = ({className}) => <i data-lucide="flask-conical" className={className || "w-8 h-8 text-blue-600"}></i>;
         const HomeIcon = ({className}) => <i data-lucide="home" className={className || "w-5 h-5"}></i>;
 
-        // --- Constants ---
+        // --- Constants & Security (Cloudflare Proxy Integration) ---
         const APP_ID = window.__app_id || 'kim-suseok-science-app';
         const AI_MODEL = "gemini-3.1-flash-lite-preview";
-        const PROXY_URL = "https://young-silence-3c76.jeongdael00.workers.dev/"; // 클라우드플레어 워커 주소
+        const PROXY_URL = "https://young-silence-3c76.jeongdael00.workers.dev/"; 
         
         const formatDate = (timestamp) => {
             if (!timestamp) return '';
@@ -102,6 +248,7 @@
             return date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'numeric', day: 'numeric' });
         };
 
+        // --- Hidden Element for Export ---
         const HiddenExportCard = React.forwardRef((props, ref) => (
             <div ref={ref} className="word-card-export font-sans">
                 <div className="border-b-4 border-blue-800 pb-6 mb-8 flex justify-between items-end">
@@ -134,6 +281,7 @@
             </div>
         ));
 
+        // --- Main Component ---
         function App() {
             const [user, setUser] = useState(null);
             const [view, setView] = useState('home');
@@ -198,9 +346,10 @@
             useEffect(() => {
                 if (!user || !window.db) return;
                 const q = window.query(window.collection(window.db, 'artifacts', APP_ID, 'users', user.uid, 'wordbook'), window.orderBy('createdAt', 'desc'));
-                return window.onSnapshot(q, (snapshot) => {
+                const unsubscribe = window.onSnapshot(q, (snapshot) => {
                     setSavedWords(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-                }, (error) => console.error("Wordbook error:", error));
+                });
+                return () => unsubscribe();
             }, [user]);
 
             useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [layerStack, isLoading]);
@@ -212,7 +361,7 @@
                 setLastScrollY(currentScrollY);
             };
 
-            // --- API Logic (Cloudflare Worker 연동) ---
+            // --- API Logic (Cloudflare Proxy를 통한 안전한 호출) ---
             const callGemini = async (prompt, systemInstruction = "") => {
                 try {
                     const response = await fetch(PROXY_URL, {
@@ -222,17 +371,17 @@
                             prompt: prompt,
                             systemInstruction: systemInstruction,
                             model: AI_MODEL,
-                            keyIndex: 1 // 1번 API 키 사용 지정
+                            keyIndex: 1 // 1번 API 프로젝트 사용
                         })
                     });
 
-                    if (!response.ok) throw new Error(`API 오류: ${response.status}`);
+                    if (!response.ok) throw new Error(`서버 응답 오류: ${response.status}`);
                     const data = await response.json();
                     if (data.error) throw new Error(data.error);
                     
                     return data.candidates[0].content.parts[0].text;
                 } catch (error) {
-                    console.error("Gemini Error:", error);
+                    console.error("API Call Failed:", error);
                     throw error;
                 }
             };
@@ -240,26 +389,38 @@
             const parseAIResponse = (text, stackWords = []) => {
                 const hasStructuredTags = text.includes('[어원]') && text.includes('[개념]') && text.includes('[스토리]');
                 if (hasStructuredTags) {
-                    const intro = text.match(/\[도입\]([\s\S]*?)(?=\[어원\])/)?.[1].trim() || "";
-                    const origin = text.match(/\[어원\]([\s\S]*?)(?=\[개념\])/)?.[1].trim() || "어원 정보 없음";
-                    const concept = text.match(/\[개념\]([\s\S]*?)(?=\[스토리\])/)?.[1].trim() || "개념 정보 없음";
-                    const story = text.match(/\[스토리\]([\s\S]*?)(?=\[추천\])/)?.[1].trim() || "스토리 정보 없음";
+                    const introMatch = text.match(/\[도입\]([\s\S]*?)(?=\[어원\])/);
+                    const originMatch = text.match(/\[어원\]([\s\S]*?)(?=\[개념\])/);
+                    const conceptMatch = text.match(/\[개념\]([\s\S]*?)(?=\[스토리\])/);
+                    const storyMatch = text.match(/\[스토리\]([\s\S]*?)(?=\[추천\])/);
                     const recMatch = text.match(/\[추천\]([\s\S]*)$/);
-                    let recs = recMatch ? recMatch[1].split(',').map(s => s.trim().replace(/['"\[\]]/g, '')).filter(w => w && !stackWords.includes(w)) : [];
-                    return { isStructured: true, intro, origin, concept, story, recs };
+                    let recs = recMatch ? recMatch[1].split(',').map(s => s.trim().replace(/['"\[\]]/g, '')).filter(word => word && !stackWords.includes(word)) : [];
+                    return { isStructured: true, intro: introMatch?.[1].trim() || "", origin: originMatch?.[1].trim() || "", concept: conceptMatch?.[1].trim() || "", story: storyMatch?.[1].trim() || "", recs };
                 } else {
                     const recMatch = text.match(/\[추천\]([\s\S]*)$/);
-                    const recs = recMatch ? recMatch[1].split(',').map(s => s.trim().replace(/['"\[\]]/g, '')).filter(w => w && !stackWords.includes(w)) : [];
-                    const content = text.replace(/\[추천\][\s\S]*$/, '').trim();
-                    return { isStructured: false, content, recs };
+                    let recs = recMatch ? recMatch[1].split(',').map(s => s.trim().replace(/['"\[\]]/g, '')).filter(word => word && !stackWords.includes(word)) : [];
+                    return { isStructured: false, content: text.replace(/\[추천\][\s\S]*$/, '').trim(), recs };
                 }
             };
 
-            const systemPromptBase = `당신은 '김수석' 과학 선생님입니다. 학생을 아끼는 다정한 반말로 설명하세요. 수식은 LaTeX($$)를 사용하고, 답변은 반드시 [도입], [어원], [개념], [스토리], [추천] 섹션으로 나누어 강조(**내용**)를 포함하여 작성하세요.`;
-            const followUpSystemPrompt = `당신은 '김수석' 과학 선생님입니다. 추가 질문에 대해 친절한 반말로 원리를 설명해주세요. 마지막에는 [추천] 태그로 연관 개념어 3개를 적어주세요.`;
+            const systemPromptBase = `
+                당신은 '김수석' 과학 선생님입니다. 학생이 과학 단어에 대해 질문하면 다음 구조로 설명해주세요.
+                **핵심 지침:**
+                1. **다정한 반말 사용**: 기계적이지 않고, 학생을 아끼는 친절하고 다정한 선생님처럼 편안한 반말로 설명하세요.
+                2. **호칭 금지**: 학생을 지칭하는 호칭은 생략하세요.
+                3. **수식/화학식**: 반드시 LaTeX 문법을 사용하고 $ 기호로 감싸주세요.
+                4. **강조 표시**: 핵심 단어나 중요한 설명은 반드시 **별표 두 개**로 감싸주세요.
+                **답변 구조:**
+                [도입], [어원], [개념], [스토리], [추천] 섹션을 정확히 나누어 답변하세요.
+            `;
+
+            const followUpSystemPrompt = `
+                당신은 '김수석' 과학 선생님입니다. 추가 질문에 대해 형식에 얽매이지 말고 아주 다정하고 친절한 반말로 원리를 설명해주세요. 마지막에는 [추천] 태그로 연관 개념어 3개를 적어주세요.
+            `;
 
             const handleSearch = async (term) => {
                 if (!term.trim()) return;
+                setSearchQuery(term);
                 setView('chat');
                 const newLayer = { id: Date.now(), word: term, history: [{ role: 'user', content: `'${term}'에 대해 설명해주세요 선생님!` }], recommendations: [] };
                 setLayerStack([newLayer]);
@@ -276,7 +437,7 @@
                 } catch (err) {
                     setLayerStack(prev => {
                         const newStack = [...prev];
-                        newStack[newStack.length-1].history.push({ role: 'ai', isStructured: false, content: "통신 상태가 좋지 않아 설명을 가져오지 못했어. 다시 시도해줄래?" });
+                        newStack[newStack.length - 1].history.push({ role: 'ai', isStructured: false, content: "미안해, 잠시 통신이 끊겼어. 다시 시도해줄래?" });
                         return newStack;
                     });
                 } finally { setIsLoading(false); }
@@ -306,9 +467,9 @@
                     return newStack;
                 });
                 setIsLoading(true);
-                const context = currentLayer.history.map(h => `${h.role === 'user' ? '질문' : '설명'}: ${h.content || h.concept}`).join('\n');
+                const context = currentLayer.history.map(h => `${h.role === 'user' ? '학생' : '김수석'}: ${h.content || h.concept}`).join('\n');
                 try {
-                    const responseText = await callGemini(`${context}\n질문: ${msg}`, followUpSystemPrompt);
+                    const responseText = await callGemini(`${context}\n학생: ${msg}`, followUpSystemPrompt);
                     const parsed = parseAIResponse(responseText, layerStack.map(l => l.word));
                     setLayerStack(prev => {
                         const newStack = [...prev];
@@ -323,12 +484,12 @@
                 if (!currentLayer || !user) return;
                 setIsLoading(true);
                 try {
-                    const jsonText = await callGemini(`${currentLayer.word} 정보를 JSON 형식({"word", "origin", "meaning", "story"})으로 추출해.`, "Output ONLY JSON.");
+                    const jsonText = await callGemini(`${currentLayer.word} 정보를 JSON({"word", "origin", "meaning", "story"})으로 추출해.`, "Output ONLY JSON.");
                     let cleanJson = jsonText.replace(/```json/gi, '').replace(/```/g, '').trim();
                     const data = JSON.parse(cleanJson.substring(cleanJson.indexOf('{'), cleanJson.lastIndexOf('}') + 1));
                     await window.addDoc(window.collection(window.db, 'artifacts', APP_ID, 'users', user.uid, 'wordbook'), { ...data, createdAt: window.serverTimestamp() });
                     alert("단어장에 저장했어! ✅");
-                } catch (err) { alert("저장에 실패했어."); } finally { setIsLoading(false); }
+                } catch (err) { alert("저장 중 오류가 발생했어."); } finally { setIsLoading(false); }
             };
 
             const downloadCard = async (wordData) => {
@@ -346,10 +507,10 @@
                 <div className="flex flex-col items-center justify-center min-h-[100dvh] px-4 py-6">
                     <div className="bg-white p-8 md:p-12 rounded-[2rem] shadow-xl w-full max-w-lg border-t-8 border-blue-600 text-center">
                         <div className="mb-8 flex justify-center">
-                            <img src="https://res.cloudinary.com/dms5vyofw/image/upload/v1766382489/%E1%84%80%E1%85%B5%E1%86%B7%E1%84%89%E1%85%AE%E1%84%89%E1%85%A5%E1%86%A8%E1%84%8B%E1%85%A1%E1%84%8B%E1%85%B5%E1%84%8F%E1%85%A9%E1%86%AB_%E1%84%85%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%AB_%E1%84%8F%E1%85%A5%E1%86%AF%E1%84%85%E1%85%A51_snx7la.png" alt="캐릭터" className="w-32 h-32 object-contain" />
+                            <img src="https://res.cloudinary.com/dms5vyofw/image/upload/v1766382489/%E1%84%80%E1%85%B5%E1%86%B7%E1%84%89%E1%85%AE%E1%84%89%E1%85%A5%E1%86%A8%E1%84%8B%E1%85%A1%E1%84%8B%E1%85%B5%E1%84%8F%E1%85%A9%E1%86%AB_%E1%84%85%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%AB_%E1%84%8F%E1%85%A5%E1%86%AF%E1%84%85%E1%85%A51_snx7la.png" className="w-32 h-32 object-contain" />
                         </div>
                         <h1 className="text-3xl md:text-4xl font-black text-slate-800 mb-4 tracking-tight">김수석 과학 선생님</h1>
-                        <p className="text-slate-500 mb-10">어원으로 쪼개고 스토리로 기억해!</p>
+                        <p className="text-slate-500 mb-10 font-medium leading-relaxed">어원과 스토리로 기억하는 과학! 🧪</p>
                         <form onSubmit={(e) => { e.preventDefault(); handleSearch(e.target.search.value); }} className="relative mb-6">
                             <input name="search" type="text" placeholder="어떤 단어가 궁금해?" className="w-full pl-6 pr-14 py-4 rounded-2xl border-2 border-slate-200 focus:border-blue-500 outline-none text-lg shadow-sm" />
                             <button type="submit" className="absolute right-2 top-2 p-3 bg-blue-600 text-white rounded-xl shadow-md"><SearchIcon /></button>
@@ -361,7 +522,7 @@
 
             const renderChat = () => (
                 <div className="flex flex-col h-[100dvh] bg-white md:max-w-4xl md:mx-auto md:shadow-2xl border-x border-slate-200 relative overflow-hidden">
-                    <div className={`bg-white/95 backdrop-blur-md px-3 py-2 border-b border-slate-100 absolute w-full z-20 transition-transform duration-300 ${showHeader ? 'translate-y-0' : '-translate-y-full shadow-none'}`}>
+                    <div className={`bg-white/95 backdrop-blur-md px-3 py-2 border-b border-slate-100 absolute w-full z-20 transition-transform duration-300 ${showHeader ? 'translate-y-0' : '-translate-y-full'}`}>
                         <div className="flex items-center justify-between">
                             <button onClick={() => layerStack.length > 1 ? setLayerStack(prev => prev.slice(0, -1)) : setView('home')} className="p-1.5 hover:bg-slate-100 rounded-full"><ChevronLeftIcon /></button>
                             <h2 className="font-bold text-slate-800 truncate">{currentLayer?.word}</h2>
@@ -425,21 +586,11 @@
                                 <div className="chat-bubble ai typing-indicator bg-white border border-slate-200"><span></span><span></span><span></span></div>
                             </div>
                         )}
-                        {currentLayer?.recommendations?.length > 0 && !isLoading && (
-                            <div className="ml-10 mt-6 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-                                <div className="flex items-center gap-2 mb-3 font-bold text-sm text-slate-700"><SparklesIcon /> 다음엔 이거 어때?</div>
-                                <div className="flex flex-wrap gap-2">
-                                    {currentLayer.recommendations.map((rec, i) => (
-                                        <button key={i} onClick={() => handleRelatedWordClick(rec)} className="bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1.5 rounded-xl text-sm font-bold">{rec}</button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
                         <div ref={chatEndRef} className="h-4"></div>
                     </div>
                     <div className="p-3 bg-white border-t border-slate-100">
                         <form onSubmit={(e) => { e.preventDefault(); handleFollowUp(e.target.msg.value); e.target.msg.value = ''; }} className="flex gap-2 items-center">
-                            <input name="msg" type="text" placeholder="추가 질문을 해봐!" className="flex-1 px-5 py-3 bg-slate-100 rounded-full focus:ring-2 focus:ring-blue-500 outline-none" autoComplete="off" />
+                            <input name="msg" type="text" placeholder="추가 질문을 해봐!" className="flex-1 px-5 py-3 bg-slate-100 rounded-full outline-none focus:ring-2 focus:ring-blue-500" autoComplete="off" />
                             <button type="submit" disabled={isLoading} className="bg-blue-600 text-white p-3.5 rounded-full shadow-lg active:scale-90 transition-transform"><SendIcon /></button>
                         </form>
                     </div>
@@ -448,7 +599,7 @@
 
             const renderWordbook = () => (
                 <div className="min-h-[100dvh] bg-slate-50 pb-20">
-                    <div className="bg-white/90 backdrop-blur-md sticky top-0 z-10 border-b border-slate-200 shadow-sm p-4 flex justify-between items-center">
+                    <div className="bg-white/90 backdrop-blur-md sticky top-0 z-10 border-b p-4 flex justify-between items-center shadow-sm">
                         <button onClick={() => setView('home')} className="text-slate-500 font-bold flex items-center"><ChevronLeftIcon /> 홈으로</button>
                         <h1 className="text-lg font-bold">나의 단어장 <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs">{savedWords.length}</span></h1>
                         <div className="w-8"></div>
@@ -457,11 +608,11 @@
                         {savedWords.map(word => (
                             <div key={word.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative group">
                                 <div className="flex justify-between items-start mb-4">
-                                    <div><h3 className="text-2xl font-bold text-slate-800">{word.word}</h3><p className="text-blue-600 italic font-serif">{word.origin}</p></div>
+                                    <div><h3 className="text-2xl font-bold text-slate-800">{word.word}</h3><p className="text-blue-600 italic">{word.origin}</p></div>
                                     <button onClick={() => downloadCard(word)} className="p-2 text-slate-400 hover:text-blue-600"><DownloadIcon /></button>
                                 </div>
-                                <div className="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-100"><p className="text-slate-700 font-medium">{word.meaning}</p></div>
-                                <div className="bg-amber-50 p-4 rounded-xl border border-amber-100"><p className="text-slate-700 text-sm leading-relaxed">{word.story}</p></div>
+                                <div className="mb-4 p-4 bg-slate-50 rounded-xl"><p className="text-slate-700 font-medium">{word.meaning}</p></div>
+                                <div className="bg-amber-50 p-4 rounded-xl"><p className="text-slate-700 text-sm">{word.story}</p></div>
                             </div>
                         ))}
                     </div>
