@@ -1,20 +1,21 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>김수석의 과학 단어장</title>
-    
+    <title>김수석 과학 선생님</title>
+
     <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
+
     <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Html2Canvas (For Image Generation) -->
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
@@ -59,10 +60,18 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
-        #root, #root > div, body, html { background-color: transparent !important; }
+
+        #root,
+        #root>div,
+        body,
+        html {
+            background-color: transparent !important;
+        }
+
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f8fafc; /* Slate-50 */
+            background-color: transparent;
+            /* Changed for Imweb iframe */
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -70,6 +79,7 @@
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
         }
+
         .scrollbar-hide {
             -ms-overflow-style: none;
             scrollbar-width: none;
@@ -81,17 +91,19 @@
             border-radius: 1.25rem;
             line-height: 1.6;
             margin-bottom: 0.5rem;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            font-size: 0.95rem; 
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            font-size: 0.95rem;
             width: fit-content;
         }
 
         .chat-bubble.user {
-            background-color: #2563eb; /* Blue-600 */
+            background-color: #2563eb;
+            /* Blue-600 */
             color: white;
             margin-left: auto;
             border-bottom-right-radius: 0.25rem;
-            max-width: 85%; /* 모바일에서 유저 말풍선 최대 너비 */
+            max-width: 85%;
+            /* 모바일에서 유저 말풍선 최대 너비 */
             word-break: break-word;
         }
 
@@ -101,13 +113,22 @@
             margin-right: auto;
             border-bottom-left-radius: 0.25rem;
             border: 1px solid #e2e8f0;
-            max-width: calc(100% - 2.5rem); /* 프로필 이미지(w-8 + mr-2) 크기를 제외한 나머지 너비 꽉 채움 */
-            overflow-x: auto; /* 내부 요소가 길면 말풍선 내에서 스크롤되도록 */
+            max-width: calc(100% - 2.5rem);
+            /* 프로필 이미지(w-8 + mr-2) 크기를 제외한 나머지 너비 꽉 채움 */
+            overflow-x: auto;
+            /* 내부 요소가 길면 말풍선 내에서 스크롤되도록 */
         }
 
         @media (min-width: 768px) {
-            .chat-bubble.user { max-width: 75%; }
-            .chat-bubble.ai { max-width: calc(100% - 3.5rem); } /* 데스크톱 여백 기준 */
+            .chat-bubble.user {
+                max-width: 75%;
+            }
+
+            .chat-bubble.ai {
+                max-width: calc(100% - 3.5rem);
+            }
+
+            /* 데스크톱 여백 기준 */
         }
 
         /* Loading Dots */
@@ -120,72 +141,115 @@
             animation: typing 1s infinite ease-in-out;
             margin: 0 2px;
         }
-        
-        .typing-indicator span:nth-child(1) { animation-delay: 0s; }
-        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-        
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
         @keyframes typing {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
         }
 
         /* Markdown Styling */
         .ai-content {
-            word-break: keep-all; /* 한국어 어절 단위 줄바꿈 */
+            word-break: keep-all;
+            /* 한국어 어절 단위 줄바꿈 */
         }
-        .ai-content h1, .ai-content h2, .ai-content h3 {
+
+        .ai-content h1,
+        .ai-content h2,
+        .ai-content h3 {
             font-weight: 700;
             color: #1e3a8a;
             margin-top: 1em;
             margin-bottom: 0.5em;
         }
-        .ai-content h1 { font-size: 1.2em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.2em; }
-        .ai-content h2 { font-size: 1.1em; }
-        
-        .ai-content p { margin-bottom: 0.8em; }
-        .ai-content ul, .ai-content ol {
+
+        .ai-content h1 {
+            font-size: 1.2em;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 0.2em;
+        }
+
+        .ai-content h2 {
+            font-size: 1.1em;
+        }
+
+        .ai-content p {
+            margin-bottom: 0.8em;
+        }
+
+        .ai-content ul,
+        .ai-content ol {
             margin-bottom: 0.8em;
             padding-left: 1.2em;
         }
-        .ai-content ul { list-style-type: disc; }
-        .ai-content ol { list-style-type: decimal; }
-        
-        .ai-content strong, .ai-content b {
+
+        .ai-content ul {
+            list-style-type: disc;
+        }
+
+        .ai-content ol {
+            list-style-type: decimal;
+        }
+
+        .ai-content strong,
+        .ai-content b {
             font-weight: 700;
-            color: #2563eb; 
+            color: #2563eb;
             background-color: #eff6ff;
             padding: 0 2px;
             border-radius: 2px;
         }
-        
+
         /* 반응형 테이블 최적화 */
         .ai-content table {
             width: 100%;
             border-collapse: collapse;
             margin: 0.8em 0;
-            font-size: 0.9em; 
+            font-size: 0.9em;
             background-color: #fff;
             border-radius: 0.5rem;
             border: 1px solid #e2e8f0;
-            display: block; /* 모바일에서 표가 넓을 때 가로 스크롤 가능하게 처리 */
+            display: block;
+            /* 모바일에서 표가 넓을 때 가로 스크롤 가능하게 처리 */
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
         }
+
         .ai-content th {
             background-color: #f8fafc;
             font-weight: 600;
             text-align: left;
             padding: 0.5rem;
             border: 1px solid #e2e8f0;
-            white-space: nowrap; /* 제목은 줄바꿈 되지 않도록 */
+            white-space: nowrap;
+            /* 제목은 줄바꿈 되지 않도록 */
         }
+
         .ai-content td {
             padding: 0.5rem;
             border: 1px solid #e2e8f0;
-            min-width: 60px; /* 너무 좁게 찌그러지지 않도록 최소 너비 지정 */
+            min-width: 60px;
+            /* 너무 좁게 찌그러지지 않도록 최소 너비 지정 */
         }
-        
+
         .ai-content blockquote {
             border-left: 4px solid #3b82f6;
             padding-left: 1rem;
@@ -220,37 +284,52 @@
 
         /* Animations */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
+
         .animate-fade-in {
             animation: fadeIn 0.3s ease-out forwards;
         }
     </style>
 </head>
+
 <body class="text-slate-900">
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
-        
+
         // --- Icons ---
-        const BookIcon = ({className}) => <i data-lucide="book" className={className || "w-5 h-5"}></i>;
-        const SearchIcon = ({className}) => <i data-lucide="search" className={className || "w-5 h-5"}></i>;
-        const SendIcon = ({className}) => <i data-lucide="send" className={className || "w-5 h-5"}></i>;
-        const ChevronLeftIcon = ({className}) => <i data-lucide="chevron-left" className={className || "w-6 h-6"}></i>;
-        const DownloadIcon = ({className}) => <i data-lucide="download" className={className || "w-5 h-5"}></i>;
-        const SaveIcon = ({className}) => <i data-lucide="bookmark-plus" className={className || "w-5 h-5"}></i>;
-        const TrashIcon = ({className}) => <i data-lucide="trash-2" className={className || "w-5 h-5"}></i>;
-        const SparklesIcon = ({className}) => <i data-lucide="sparkles" className={className || "w-4 h-4 text-amber-500"}></i>;
-        const BeakerIcon = ({className}) => <i data-lucide="flask-conical" className={className || "w-8 h-8 text-blue-600"}></i>;
-        const HomeIcon = ({className}) => <i data-lucide="home" className={className || "w-5 h-5"}></i>;
+        const BookIcon = ({ className }) => <i data-lucide="book" className={className || "w-5 h-5"}></i>;
+        const SearchIcon = ({ className }) => <i data-lucide="search" className={className || "w-5 h-5"}></i>;
+        const SendIcon = ({ className }) => <i data-lucide="send" className={className || "w-5 h-5"}></i>;
+        const ChevronLeftIcon = ({ className }) => <i data-lucide="chevron-left" className={className || "w-6 h-6"}></i>;
+        const DownloadIcon = ({ className }) => <i data-lucide="download" className={className || "w-5 h-5"}></i>;
+        const SaveIcon = ({ className }) => <i data-lucide="bookmark-plus" className={className || "w-5 h-5"}></i>;
+        const TrashIcon = ({ className }) => <i data-lucide="trash-2" className={className || "w-5 h-5"}></i>;
+        const SparklesIcon = ({ className }) => <i data-lucide="sparkles" className={className || "w-4 h-4 text-amber-500"}></i>;
+        const BeakerIcon = ({ className }) => <i data-lucide="flask-conical" className={className || "w-8 h-8 text-blue-600"}></i>;
+        const HomeIcon = ({ className }) => <i data-lucide="home" className={className || "w-5 h-5"}></i>;
 
         // --- Constants ---
         const APP_ID = window.__app_id || 'kim-suseok-science-app';
-        const AI_MODEL = "gemini-3.1-flash-lite-preview";
+        // Primary model followed by fallbacks if rate limits or quota are hit
+        const FALLBACK_MODELS = [
+            "gemini-3.1-flash-lite-preview",
+            "gemini-2.5-flash",
+            "gemini-2.5-pro",
+            "gemini-2.5-flash-8b"
+        ];
         const WORKER_URL = "https://young-silence-3c76.jeongdael00.workers.dev/";
-        
+
         // --- Helper: Date Formatting ---
         const formatDate = (timestamp) => {
             if (!timestamp) return '';
@@ -279,7 +358,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div className="mb-8 p-6 bg-slate-50 rounded-2xl border border-slate-100">
                     <h3 className="text-sm font-bold text-slate-400 mb-3 uppercase tracking-wider flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-green-500"></span> Definition
@@ -288,7 +367,7 @@
                         뜻 설명 영역
                     </p>
                 </div>
-                
+
                 <div className="bg-amber-50 p-8 rounded-2xl border-2 border-amber-100">
                     <h3 className="text-lg font-bold text-amber-700 mb-4 flex items-center gap-2">
                         <span>✨</span> Story Memory
@@ -297,7 +376,7 @@
                         스토리 영역
                     </p>
                 </div>
-                
+
                 <div className="mt-8 pt-6 border-t border-slate-100 text-center text-slate-400 text-sm font-medium">
                     오늘의 과학 지식 하나, 내일의 발견이 됩니다.
                 </div>
@@ -313,11 +392,11 @@
             const [isLoading, setIsLoading] = useState(false);
             const [savedWords, setSavedWords] = useState([]);
             const [deleteConfirmId, setDeleteConfirmId] = useState(null);
-            
+
             // Header Scroll State
             const [showHeader, setShowHeader] = useState(true);
             const [lastScrollY, setLastScrollY] = useState(0);
-            
+
             // Refs
             const chatEndRef = useRef(null);
             const exportRef = useRef(null);
@@ -327,7 +406,7 @@
             // --- Helper: Process Content (Math + Markdown) ---
             const processContent = (content) => {
                 if (!content) return "";
-                
+
                 let processed = content;
 
                 // 1. Render Block Math $$...$$
@@ -355,7 +434,7 @@
                     const res = await fetch(url);
                     const data = await res.json();
                     const pages = data.query?.pages;
-                    
+
                     if (pages) {
                         const pageId = Object.keys(pages)[0];
                         if (pageId !== "-1" && pages[pageId].thumbnail) {
@@ -408,7 +487,7 @@
             // --- Firestore Listener ---
             useEffect(() => {
                 if (!user || !window.db) return;
-                
+
                 const q = window.query(
                     window.collection(window.db, 'artifacts', APP_ID, 'users', user.uid, 'wordbook'),
                     window.orderBy('createdAt', 'desc')
@@ -428,8 +507,18 @@
             }, [user]);
 
             // --- Scroll to bottom ---
+            const scrollToBottom = () => {
+                const scrollContainer = document.getElementById('chat-scroll-container');
+                if (scrollContainer) {
+                    scrollContainer.scrollTo({
+                        top: scrollContainer.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }
+            };
+
             useEffect(() => {
-                chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                scrollToBottom();
             }, [layerStack, isLoading]);
 
             const handleScroll = (e) => {
@@ -444,91 +533,131 @@
 
             // --- AI Logic with Universal Payload & Cloudflare Worker ---
             const callGemini = async (prompt, systemInstruction = "") => {
-                const payload = {
-                    // 1. Google REST API 표준 규격 (단순 투명 프록시인 경우)
-                    contents: [{
-                        role: "user",
-                        parts: [{ text: String(prompt) }]
-                    }],
-                    system_instruction: {
-                        role: "system",
-                        parts: [{ text: String(systemInstruction) }]
-                    },
-                    
-                    // 2. 자주 사용되는 커스텀 워커 호환 규격
-                    prompt: String(prompt),
-                    text: String(prompt),
-                    message: String(prompt),
-                    systemInstruction: String(systemInstruction),
-                    model: AI_MODEL
-                };
-
+                const baseUrl = WORKER_URL.endsWith('/') ? WORKER_URL.slice(0, -1) : WORKER_URL;
                 const delays = [1000, 2000, 4000];
                 let lastError = null;
 
-                const baseUrl = WORKER_URL.endsWith('/') ? WORKER_URL.slice(0, -1) : WORKER_URL;
-                const endpointProxyUrl = `${baseUrl}/v1beta/models/${AI_MODEL}:generateContent`;
+                // 1. Try each model in the fallback chain
+                for (let modelIndex = 0; modelIndex < FALLBACK_MODELS.length; modelIndex++) {
+                    const currentModel = FALLBACK_MODELS[modelIndex];
+                    const endpointProxyUrl = `${baseUrl}/v1beta/models/${currentModel}:generateContent`;
 
-                for (let attempt = 0; attempt < delays.length; attempt++) {
-                    try {
-                        let response = await fetch(endpointProxyUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
+                    const payload = {
+                        // 1. Google REST API 표준 규격 (단순 투명 프록시인 경우)
+                        contents: [{
+                            role: "user",
+                            parts: [{ text: String(prompt) }]
+                        }],
+                        system_instruction: {
+                            role: "system",
+                            parts: [{ text: String(systemInstruction) }]
+                        },
 
-                        if (response.status === 404 && attempt === 0) {
-                            response = await fetch(WORKER_URL, {
+                        // 2. 자주 사용되는 커스텀 워커 호환 규격
+                        prompt: String(prompt),
+                        text: String(prompt),
+                        message: String(prompt),
+                        systemInstruction: String(systemInstruction),
+                        model: currentModel
+                    };
+
+                    // 2. For each model, try up to 3 times with exponential backoff
+                    for (let attempt = 0; attempt < delays.length; attempt++) {
+                        try {
+                            if (attempt > 0) {
+                                console.log(`[Retry] Attempt ${attempt + 1} for model ${currentModel}...`);
+                            }
+                            if (modelIndex > 0 && attempt === 0) {
+                                console.warn(`[Fallback] Primary model failed. Trying fallback model: ${currentModel}`);
+                            }
+
+                            let response = await fetch(endpointProxyUrl, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(payload)
                             });
-                        }
 
-                        const textResponse = await response.text();
-                        
-                        if (!response.ok) {
-                            let errorMsg = `상태 코드: ${response.status}`;
+                            if (response.status === 404 && attempt === 0) {
+                                response = await fetch(WORKER_URL, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(payload)
+                                });
+                            }
+
+                            const textResponse = await response.text();
+
+                            if (!response.ok) {
+                                let errorMsg = `HTTP ${response.status}`;
+                                let isQuotaError = response.status === 429 || response.status === 503;
+
+                                try {
+                                    const errData = JSON.parse(textResponse);
+                                    if (errData.error) {
+                                        errorMsg = typeof errData.error === 'string' ? errData.error : errData.error.message;
+                                        // Specific check for model capacity exhausted inside the JSON
+                                        if (errorMsg.includes("CAPACITY_EXHAUSTED") || errorMsg.includes("quota") || errorMsg.includes("rate limit")) {
+                                            isQuotaError = true;
+                                        }
+                                    }
+                                } catch (e) { }
+
+                                // If it's a quota/capacity error, we should immediately fail this model and try the next fallback
+                                if (isQuotaError && modelIndex < FALLBACK_MODELS.length - 1) {
+                                    console.warn(`[API] Model ${currentModel} exhausted or rate limited (${errorMsg}). Switching to next fallback.`);
+                                    throw new Error("MODEL_EXHAUSTED"); // Break out of retry loop, go to next model
+                                }
+
+                                throw new Error(errorMsg);
+                            }
+
+                            let data;
                             try {
-                                const errData = JSON.parse(textResponse);
-                                if(errData.error) errorMsg = typeof errData.error === 'string' ? errData.error : errData.error.message;
-                            } catch(e) {}
-                            throw new Error(errorMsg);
-                        }
-                        
-                        let data;
-                        try {
-                            data = JSON.parse(textResponse);
-                        } catch (e) {
-                            return textResponse;
-                        }
+                                data = JSON.parse(textResponse);
+                            } catch (e) {
+                                return textResponse;
+                            }
 
-                        const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text || data.text || data.response || textResponse;
-                        
-                        if (!resultText || typeof resultText !== 'string') {
-                            throw new Error("응답 데이터 구조를 해석할 수 없습니다.");
-                        }
+                            // Use the valid response
+                            const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text || data.text || data.response || textResponse;
 
-                        return resultText;
-                    } catch (error) {
-                        lastError = error;
-                        console.error(`Attempt ${attempt + 1} failed:`, error);
-                        if (attempt < delays.length - 1) await new Promise(res => setTimeout(res, delays[attempt]));
+                            if (!resultText || typeof resultText !== 'string') {
+                                throw new Error("응답 데이터 구조를 해석할 수 없습니다.");
+                            }
+
+                            return resultText;
+                        } catch (error) {
+                            lastError = error;
+
+                            // If it's explicitly a capacity error, break the retry loop and move to the next model immediately
+                            if (error.message === "MODEL_EXHAUSTED") {
+                                break;
+                            }
+
+                            console.error(`Attempt ${attempt + 1} for ${currentModel} failed:`, error);
+
+                            // Wait before retrying the SAME model
+                            if (attempt < delays.length - 1) {
+                                await new Promise(res => setTimeout(res, delays[attempt]));
+                            }
+                        }
                     }
                 }
+
+                // If all models and all retries failed
                 throw lastError;
             };
 
             const parseAIResponse = (text, stackWords = []) => {
                 const hasStructuredTags = text.includes('[어원]') && text.includes('[개념]') && text.includes('[스토리]');
-                
+
                 if (hasStructuredTags) {
                     const introMatch = text.match(/\[도입\]([\s\S]*?)(?=\[어원\])/);
                     const originMatch = text.match(/\[어원\]([\s\S]*?)(?=\[개념\])/);
                     const conceptMatch = text.match(/\[개념\]([\s\S]*?)(?=\[스토리\])/);
                     const storyMatch = text.match(/\[스토리\]([\s\S]*?)(?=\[추천\])/);
                     const recMatch = text.match(/\[추천\]([\s\S]*)$/);
-                    
+
                     let recs = [];
                     if (recMatch) {
                         recs = recMatch[1].split(',').map(s => s.trim().replace(/['"\[\]]/g, '')).filter(word => word && !stackWords.includes(word));
@@ -591,14 +720,14 @@
 
             const handleSearch = async (term) => {
                 if (!term.trim()) return;
-                
+
                 setSearchQuery(term);
                 setView('chat');
-                
+
                 const newLayer = { id: Date.now(), word: term, history: [], recommendations: [] };
                 const userPrompt = `'${term}'에 대해 설명해주세요 선생님!`;
                 newLayer.history.push({ role: 'user', content: userPrompt });
-                
+
                 setLayerStack([newLayer]);
                 setIsLoading(true);
 
@@ -608,23 +737,23 @@
                         callGemini(userPrompt, systemPromptBase),
                         fetchWikipediaImage(term)
                     ]);
-                    
+
                     const stackWords = [term];
                     const parsed = parseAIResponse(responseText, stackWords);
 
                     setLayerStack(prev => {
                         const newStack = [...prev];
                         const current = newStack[newStack.length - 1];
-                        current.history.push({ 
-                            role: 'ai', 
+                        current.history.push({
+                            role: 'ai',
                             isStructured: parsed.isStructured,
                             content: parsed.content,
                             intro: parsed.intro,
                             origin: parsed.origin,
                             concept: parsed.concept,
                             story: parsed.story,
-                            conceptImage: conceptImage, 
-                            revealed: 1 
+                            conceptImage: conceptImage,
+                            revealed: 1
                         });
                         current.recommendations = parsed.recs;
                         return newStack;
@@ -644,7 +773,7 @@
                 const newLayer = { id: Date.now(), word: term, history: [], recommendations: [] };
                 const userPrompt = `'${term}'에 대해 설명해주세요 선생님!`;
                 newLayer.history.push({ role: 'user', content: userPrompt });
-                
+
                 setLayerStack(prev => [...prev, newLayer]);
                 setIsLoading(true);
 
@@ -653,23 +782,23 @@
                         callGemini(userPrompt, systemPromptBase),
                         fetchWikipediaImage(term)
                     ]);
-                    
+
                     const stackWords = [...layerStack.map(l => l.word), term];
                     const parsed = parseAIResponse(responseText, stackWords);
 
                     setLayerStack(prev => {
                         const newStack = [...prev];
                         const current = newStack[newStack.length - 1];
-                        current.history.push({ 
-                            role: 'ai', 
+                        current.history.push({
+                            role: 'ai',
                             isStructured: parsed.isStructured,
                             content: parsed.content,
                             intro: parsed.intro,
                             origin: parsed.origin,
                             concept: parsed.concept,
                             story: parsed.story,
-                            conceptImage: conceptImage, 
-                            revealed: 1 
+                            conceptImage: conceptImage,
+                            revealed: 1
                         });
                         current.recommendations = parsed.recs;
                         return newStack;
@@ -687,7 +816,7 @@
 
             const handleFollowUp = async (msg) => {
                 if (!msg.trim() || !currentLayer) return;
-                
+
                 setLayerStack(prev => {
                     const newStack = [...prev];
                     newStack[newStack.length - 1].history.push({ role: 'user', content: msg });
@@ -706,15 +835,15 @@
                     setLayerStack(prev => {
                         const newStack = [...prev];
                         const current = newStack[newStack.length - 1];
-                        current.history.push({ 
-                            role: 'ai', 
+                        current.history.push({
+                            role: 'ai',
                             isStructured: parsed.isStructured,
                             content: parsed.content,
-                            intro: parsed.intro, 
+                            intro: parsed.intro,
                             origin: parsed.origin,
                             concept: parsed.concept,
                             story: parsed.story,
-                            revealed: 1 
+                            revealed: 1
                         });
                         if (parsed.recs.length > 0) {
                             current.recommendations = parsed.recs;
@@ -742,15 +871,23 @@
                     newStack[newStack.length - 1] = { ...currentLayer, history: newHistory };
                     return newStack;
                 });
-                setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+                setTimeout(() => {
+                    const scrollContainer = document.getElementById('chat-scroll-container');
+                    if (scrollContainer) {
+                        scrollContainer.scrollTo({
+                            top: scrollContainer.scrollHeight,
+                            behavior: 'smooth'
+                        });
+                    }
+                }, 50);
             };
 
             const saveToWordbook = async () => {
                 if (!currentLayer || !user) {
-                    if(!user) alert("로그인 정보를 불러오는 중이야. 잠시만 기다려줘.");
+                    if (!user) alert("로그인 정보를 불러오는 중이야. 잠시만 기다려줘.");
                     return;
                 }
-                
+
                 setIsLoading(true);
                 try {
                     const context = currentLayer.history.map(h => h.content).join('\n');
@@ -767,23 +904,23 @@
                         ${context}
                         응답은 오직 JSON만 출력해.
                     `;
-                    
+
                     const jsonText = await callGemini(extractionPrompt, "Output ONLY JSON.");
-                    
+
                     let cleanJson = jsonText.replace(/```json/gi, '').replace(/```/g, '').trim();
                     const startIdx = cleanJson.indexOf('{');
                     const endIdx = cleanJson.lastIndexOf('}');
                     if (startIdx !== -1 && endIdx !== -1) {
                         cleanJson = cleanJson.substring(startIdx, endIdx + 1);
                     }
-                    
+
                     const data = JSON.parse(cleanJson);
 
                     await window.addDoc(window.collection(window.db, 'artifacts', APP_ID, 'users', user.uid, 'wordbook'), {
                         ...data,
                         createdAt: window.serverTimestamp()
                     });
-                    
+
                     const toast = document.createElement('div');
                     toast.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg z-50 animate-fade-in font-bold flex items-center gap-2';
                     toast.innerHTML = '<span>✅ 단어장에 저장했어!</span>';
@@ -800,14 +937,14 @@
 
             const downloadCard = async (wordData) => {
                 const exportEl = exportRef.current;
-                
+
                 exportEl.querySelector('#exp-word').innerText = wordData.word;
                 exportEl.querySelector('#exp-origin').innerText = wordData.origin;
                 exportEl.querySelector('#exp-meaning').innerText = wordData.meaning;
                 exportEl.querySelector('#exp-story').innerText = wordData.story;
-                
+
                 try {
-                    const canvas = await html2canvas(exportEl, { 
+                    const canvas = await html2canvas(exportEl, {
                         scale: 2,
                         useCORS: true,
                         backgroundColor: '#ffffff'
@@ -821,7 +958,7 @@
                     alert("이미지 저장에 실패했어.");
                 }
             };
-            
+
             const handleDeleteRequest = (id) => {
                 setDeleteConfirmId(id);
             };
@@ -830,7 +967,7 @@
                 try {
                     await window.deleteDoc(window.doc(window.db, 'artifacts', APP_ID, 'users', user.uid, 'wordbook', docId));
                     setDeleteConfirmId(null);
-                } catch(err) {
+                } catch (err) {
                     console.error(err);
                 }
             };
@@ -842,16 +979,16 @@
                     <div className="bg-white p-8 md:p-12 rounded-[2rem] shadow-xl w-full max-w-lg border-t-8 border-blue-600 flex flex-col justify-center text-center">
                         <div className="mb-8 flex justify-center">
                             <div className="w-32 h-32 flex items-center justify-center">
-                                <img 
-                                    src="https://res.cloudinary.com/dms5vyofw/image/upload/v1766382489/%E1%84%80%E1%85%B5%E1%86%B7%E1%84%89%E1%85%AE%E1%84%89%E1%85%A5%E1%86%A8%E1%84%8B%E1%85%A1%E1%84%8B%E1%85%B5%E1%84%8F%E1%85%A9%E1%86%AB_%E1%84%85%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%AB_%E1%84%8F%E1%85%A5%E1%86%AF%E1%84%85%E1%85%A51_snx7la.png" 
-                                    alt="김수석 선생님 캐릭터" 
+                                <img
+                                    src="https://res.cloudinary.com/dms5vyofw/image/upload/v1766382489/%E1%84%80%E1%85%B5%E1%86%B7%E1%84%89%E1%85%AE%E1%84%89%E1%85%A5%E1%86%A8%E1%84%8B%E1%85%A1%E1%84%8B%E1%85%B5%E1%84%8F%E1%85%A9%E1%86%AB_%E1%84%85%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%AB_%E1%84%8F%E1%85%A5%E1%86%AF%E1%84%85%E1%85%A51_snx7la.png"
+                                    alt="김수석 선생님 캐릭터"
                                     className="w-full h-full object-contain drop-shadow-md"
                                 />
                             </div>
                         </div>
                         <h1 className="text-3xl md:text-4xl font-black text-slate-800 mb-4 tracking-tight">김수석 과학 선생님</h1>
                         <p className="text-slate-500 text-lg md:text-xl leading-relaxed mb-10 font-medium">
-                            어려운 과학 용어, <br/>
+                            어려운 과학 용어, <br />
                             <span className="text-blue-600 font-bold">어원</span>으로 쪼개고 <span className="text-blue-600 font-bold">스토리</span>로 기억해!
                         </p>
 
@@ -869,7 +1006,7 @@
                             </button>
                         </form>
 
-                        <button 
+                        <button
                             onClick={() => setView('wordbook')}
                             className="w-full py-4 bg-white border-2 border-slate-200 text-slate-600 rounded-2xl hover:bg-slate-50 active:bg-slate-100 transition-all flex items-center justify-center gap-2 font-bold text-lg hover:border-slate-300"
                         >
@@ -881,31 +1018,31 @@
             );
 
             const renderChat = () => (
-                <div className="flex flex-col h-[100dvh] bg-white md:max-w-4xl md:mx-auto md:shadow-2xl md:border-x border-slate-200 relative overflow-hidden">
+                <div className="flex flex-col h-[100dvh] bg-transparent md:max-w-4xl md:mx-auto relative overflow-hidden">
                     {/* Header */}
                     <div className={`bg-white/95 backdrop-blur-md px-3 py-2 border-b border-slate-100 absolute w-full z-20 transition-transform duration-300 ${showHeader ? 'translate-y-0' : '-translate-y-full shadow-none'}`}>
                         <div className="flex items-center justify-between mb-1">
-                            <button 
+                            <button
                                 onClick={() => {
                                     if (layerStack.length > 1) {
                                         setLayerStack(prev => prev.slice(0, -1));
                                     } else {
                                         setView('home');
                                     }
-                                }} 
+                                }}
                                 className="p-1.5 -ml-1 hover:bg-slate-100 rounded-full transition active:scale-95 text-slate-500"
                             >
-                                <ChevronLeftIcon className="w-5 h-5"/>
+                                <ChevronLeftIcon className="w-5 h-5" />
                             </button>
                             <div className="text-center flex-1 mx-2 overflow-hidden">
                                 <h2 className="font-bold text-base text-slate-800 truncate">{currentLayer?.word}</h2>
                             </div>
                             <div className="flex items-center gap-1 -mr-1">
                                 <button onClick={() => { setView('home'); setLayerStack([]); }} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition" title="홈으로">
-                                    <HomeIcon className="w-5 h-5"/>
+                                    <HomeIcon className="w-5 h-5" />
                                 </button>
-                                <button 
-                                    onClick={saveToWordbook} 
+                                <button
+                                    onClick={saveToWordbook}
                                     disabled={isLoading}
                                     className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full transition shadow-sm disabled:opacity-50 disabled:shadow-none"
                                     title="단어장 저장"
@@ -918,7 +1055,7 @@
                         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
                             {layerStack.map((layer, idx) => (
                                 <React.Fragment key={layer.id}>
-                                    <div 
+                                    <div
                                         className={`text-[11px] font-bold whitespace-nowrap px-2 py-1 rounded transition-colors ${idx === layerStack.length - 1 ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-500 cursor-pointer hover:bg-slate-200 hover:text-slate-700'}`}
                                         onClick={() => {
                                             if (idx < layerStack.length - 1) {
@@ -935,11 +1072,11 @@
                     </div>
 
                     {/* Chat Area */}
-                    <div onScroll={handleScroll} className="flex-1 overflow-y-auto px-3 pb-4 pt-[80px] md:pt-[88px] bg-slate-50 scrollbar-hide">
+                    <div id="chat-scroll-container" onScroll={handleScroll} className="flex-1 overflow-y-auto px-3 pb-4 pt-[80px] md:pt-[88px] bg-transparent scrollbar-hide">
                         {currentLayer?.history.map((msg, idx) => {
                             const isLastMessage = idx === currentLayer.history.length - 1;
                             const showRecommendations = isLastMessage && !isLoading && currentLayer.recommendations?.length > 0 && (!msg.isStructured || msg.revealed >= 3);
-                            
+
                             if (msg.role === 'user') {
                                 return (
                                     <div key={idx} className="flex justify-end mb-5 md:mb-6">
@@ -955,9 +1092,9 @@
                                     {!msg.isStructured ? (
                                         <div className="flex justify-start">
                                             <div className="mr-2 md:mr-3 flex-shrink-0 mt-1">
-                                                <img 
-                                                    src="https://res.cloudinary.com/dms5vyofw/image/upload/v1766382489/%E1%84%80%E1%85%B5%E1%86%B7%E1%84%89%E1%85%AE%E1%84%89%E1%85%A5%E1%86%A8%E1%84%8B%E1%85%A1%E1%84%8B%E1%85%B5%E1%84%8F%E1%85%A9%E1%86%AB_%E1%84%85%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%AB_%E1%84%8F%E1%85%A5%E1%86%AF%E1%84%85%E1%85%A51_snx7la.png" 
-                                                    alt="김수석" 
+                                                <img
+                                                    src="https://res.cloudinary.com/dms5vyofw/image/upload/v1766382489/%E1%84%80%E1%85%B5%E1%86%B7%E1%84%89%E1%85%AE%E1%84%89%E1%85%A5%E1%86%A8%E1%84%8B%E1%85%A1%E1%84%8B%E1%85%B5%E1%84%8F%E1%85%A9%E1%86%AB_%E1%84%85%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%AB_%E1%84%8F%E1%85%A5%E1%86%AF%E1%84%85%E1%85%A51_snx7la.png"
+                                                    alt="김수석"
                                                     className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white border border-slate-200 object-cover p-0.5 shadow-sm"
                                                 />
                                             </div>
@@ -1001,7 +1138,7 @@
                                             {msg.revealed < 2 && (
                                                 <div className="flex justify-center my-2 animate-fade-in">
                                                     <button onClick={() => handleReveal(idx, 2)} className="bg-blue-100 text-blue-700 hover:bg-blue-200 px-5 py-2.5 rounded-full text-sm font-bold shadow-sm transition-all active:scale-95 flex items-center gap-2">
-                                                        <BeakerIcon className="w-4 h-4 text-blue-600"/> 개념 설명도 볼래? 👇
+                                                        <BeakerIcon className="w-4 h-4 text-blue-600" /> 개념 설명도 볼래? 👇
                                                     </button>
                                                 </div>
                                             )}
@@ -1019,11 +1156,11 @@
                                                             {msg.conceptImage && (
                                                                 <div className="mb-4 mt-1 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex justify-center p-3 relative shadow-inner">
                                                                     <div className="absolute top-2 left-2 text-[10px] font-bold text-slate-400 bg-white/90 px-1.5 py-0.5 rounded backdrop-blur-sm border border-slate-100 shadow-sm flex items-center gap-1">
-                                                                        <SearchIcon className="w-3 h-3"/> Wikipedia
+                                                                        <SearchIcon className="w-3 h-3" /> Wikipedia
                                                                     </div>
-                                                                    <img 
-                                                                        src={msg.conceptImage} 
-                                                                        alt={`${currentLayer.word} 개념 이미지`} 
+                                                                    <img
+                                                                        src={msg.conceptImage}
+                                                                        alt={`${currentLayer.word} 개념 이미지`}
                                                                         className="max-h-56 object-contain rounded-lg transition-opacity duration-300"
                                                                         onError={(e) => { e.target.closest('div').style.display = 'none'; }} // 로드 실패 시 숨김 처리
                                                                     />
@@ -1039,7 +1176,7 @@
                                             {msg.revealed === 2 && (
                                                 <div className="flex justify-center my-2 animate-fade-in">
                                                     <button onClick={() => handleReveal(idx, 3)} className="bg-blue-100 text-blue-700 hover:bg-blue-200 px-5 py-2.5 rounded-full text-sm font-bold shadow-sm transition-all active:scale-95 flex items-center gap-2">
-                                                        <SparklesIcon className="w-4 h-4 text-blue-600"/> 스토리 기억법 보기 👇
+                                                        <SparklesIcon className="w-4 h-4 text-blue-600" /> 스토리 기억법 보기 👇
                                                     </button>
                                                 </div>
                                             )}
@@ -1064,7 +1201,7 @@
                                         <div className="ml-10 md:ml-14 mt-6 mb-2 animate-fade-in bg-white p-4 rounded-2xl border border-slate-200 shadow-sm relative">
                                             <div className="absolute -left-3 top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-[8px] border-t-transparent border-r-[12px] border-r-white border-b-[8px] border-b-transparent z-10"></div>
                                             <div className="absolute -left-[13px] top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-[8px] border-t-transparent border-r-[12px] border-r-slate-200 border-b-[8px] border-b-transparent"></div>
-                                            
+
                                             <div className="flex items-center gap-2 mb-3">
                                                 <SparklesIcon />
                                                 <span className="text-sm font-bold text-slate-700">이 개념어들도 이어서 학습해볼까?</span>
@@ -1082,7 +1219,7 @@
                                             </div>
                                             <div className="mt-4 pt-4 border-t border-slate-100 flex justify-end gap-2">
                                                 {layerStack.length > 1 && (
-                                                    <button 
+                                                    <button
                                                         onClick={() => setLayerStack(prev => prev.slice(0, -1))}
                                                         className="flex items-center gap-1 px-3 py-1.5 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
                                                     >
@@ -1090,7 +1227,7 @@
                                                         이전 단어로
                                                     </button>
                                                 )}
-                                                <button 
+                                                <button
                                                     onClick={() => { setView('home'); setLayerStack([]); }}
                                                     className="flex items-center gap-1 px-3 py-1.5 text-sm font-bold text-white bg-slate-800 hover:bg-slate-900 rounded-lg transition-colors"
                                                 >
@@ -1107,9 +1244,9 @@
                         {isLoading && (
                             <div className="flex justify-start mb-6">
                                 <div className="mr-2 md:mr-3 mt-1">
-                                    <img 
-                                        src="https://res.cloudinary.com/dms5vyofw/image/upload/v1766382489/%E1%84%80%E1%85%B5%E1%86%B7%E1%84%89%E1%85%AE%E1%84%89%E1%85%A5%E1%86%A8%E1%84%8B%E1%85%A1%E1%84%8B%E1%85%B5%E1%84%8F%E1%85%A9%E1%86%AB_%E1%84%85%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%AB_%E1%84%8F%E1%85%A5%E1%86%AF%E1%84%85%E1%85%A51_snx7la.png" 
-                                        alt="김수석" 
+                                    <img
+                                        src="https://res.cloudinary.com/dms5vyofw/image/upload/v1766382489/%E1%84%80%E1%85%B5%E1%86%B7%E1%84%89%E1%85%AE%E1%84%89%E1%85%A5%E1%86%A8%E1%84%8B%E1%85%A1%E1%84%8B%E1%85%B5%E1%84%8F%E1%85%A9%E1%86%AB_%E1%84%85%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%AB_%E1%84%8F%E1%85%A5%E1%86%AF%E1%84%85%E1%85%A51_snx7la.png"
+                                        alt="김수석"
                                         className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white border border-slate-200 object-cover p-0.5 shadow-sm"
                                     />
                                 </div>
@@ -1123,7 +1260,7 @@
 
                     {/* Input */}
                     <div className="p-3 bg-white border-t border-slate-100">
-                        <form 
+                        <form
                             onSubmit={(e) => {
                                 e.preventDefault();
                                 handleFollowUp(e.target.msg.value);
@@ -1150,7 +1287,7 @@
             );
 
             const renderWordbook = () => (
-                <div className="min-h-[100dvh] bg-slate-50 pb-20">
+                <div className="min-h-[100dvh] bg-transparent pb-20">
                     <div className="bg-white/90 backdrop-blur-md sticky top-0 z-10 border-b border-slate-200 shadow-sm">
                         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
                             <button onClick={() => setView('home')} className="flex items-center gap-1 text-slate-500 hover:text-blue-600 transition -ml-2 p-2 rounded-lg hover:bg-slate-50">
@@ -1158,10 +1295,10 @@
                                 <span className="font-bold">홈으로</span>
                             </button>
                             <h1 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                나의 단어장 
+                                나의 단어장
                                 <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full">{savedWords.length}</span>
                             </h1>
-                            <div className="w-8"></div> 
+                            <div className="w-8"></div>
                         </div>
                     </div>
 
@@ -1171,7 +1308,7 @@
                                 <div className="bg-white p-6 rounded-full mb-4 shadow-sm border border-slate-100">
                                     <BookIcon className="w-12 h-12 opacity-30" />
                                 </div>
-                                <p className="text-center font-medium text-lg">아직 저장된 단어가 없어.<br/><span className="text-sm mt-2 block opacity-70">선생님과 대화하고 단어를 저장해봐!</span></p>
+                                <p className="text-center font-medium text-lg">아직 저장된 단어가 없어.<br /><span className="text-sm mt-2 block opacity-70">선생님과 대화하고 단어를 저장해봐!</span></p>
                             </div>
                         ) : (
                             savedWords.map((word) => (
@@ -1185,7 +1322,7 @@
                                             <button onClick={() => downloadCard(word)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition" title="카드 저장">
                                                 <DownloadIcon className="w-5 h-5" />
                                             </button>
-                                            
+
                                             {deleteConfirmId === word.id ? (
                                                 <div className="flex items-center bg-red-50 rounded-full p-1 border border-red-100 animate-fade-in absolute right-4 top-4 shadow-md z-10">
                                                     <button onClick={() => handleDeleteConfirm(word.id)} className="text-xs font-bold text-white bg-red-500 px-3 py-1.5 rounded-full mr-1">삭제</button>
@@ -1198,7 +1335,7 @@
                                             )}
                                         </div>
                                     </div>
-                                    
+
                                     <div className="mb-4 bg-slate-50 p-4 rounded-xl border border-slate-100/50">
                                         <div className="flex items-center gap-1.5 mb-2">
                                             <span className="w-2 h-2 rounded-full bg-green-500"></span>
@@ -1206,7 +1343,7 @@
                                         </div>
                                         <p className="text-slate-700 font-medium leading-relaxed">{word.meaning}</p>
                                     </div>
-                                    
+
                                     <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-100/50 mt-auto">
                                         <div className="flex items-center gap-1.5 mb-2 text-amber-700 font-bold text-xs uppercase tracking-wider">
                                             <SparklesIcon className="w-3.5 h-3.5" />
@@ -1241,4 +1378,5 @@
         root.render(<App />);
     </script>
 </body>
+
 </html>
