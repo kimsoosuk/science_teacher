@@ -455,23 +455,8 @@
                 // 1. Try each model in the fallback chain
                 for (let modelIndex = 0; modelIndex < FALLBACK_MODELS.length; modelIndex++) {
                     const currentModel = FALLBACK_MODELS[modelIndex];
-                    const endpointProxyUrl = `${baseUrl}/v1beta/models/${currentModel}:generateContent`;
-
                     const payload = {
-                        // 1. Google REST API 표준 규격 (단순 투명 프록시인 경우)
-                        contents: [{
-                            role: "user",
-                            parts: [{ text: String(prompt) }]
-                        }],
-                        system_instruction: {
-                            role: "system",
-                            parts: [{ text: String(systemInstruction) }]
-                        },
-
-                        // 2. 자주 사용되는 커스텀 워커 호환 규격
                         prompt: String(prompt),
-                        text: String(prompt),
-                        message: String(prompt),
                         systemInstruction: String(systemInstruction),
                         model: currentModel
                     };
@@ -486,19 +471,11 @@
                                 console.warn(`[Fallback] Primary model failed. Trying fallback model: ${currentModel}`);
                             }
 
-                            let response = await fetch(endpointProxyUrl, {
+                            let response = await fetch(baseUrl, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(payload)
                             });
-
-                            if (response.status === 404 && attempt === 0) {
-                                response = await fetch(WORKER_URL, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify(payload)
-                                });
-                            }
 
                             const textResponse = await response.text();
 
