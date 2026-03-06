@@ -87,7 +87,8 @@
 
         .chat-bubble {
             position: relative;
-            padding: 0.75rem 0.875rem;
+            padding: 0.6rem 0.75rem;
+            /* 모바일에서 가로 여백 최소화 */
             border-radius: 1.25rem;
             line-height: 1.6;
             margin-bottom: 0.5rem;
@@ -102,8 +103,8 @@
             color: white;
             margin-left: auto;
             border-bottom-right-radius: 0.25rem;
-            max-width: 85%;
-            /* 모바일에서 유저 말풍선 최대 너비 */
+            max-width: 88%;
+            /* 모바일에서 유저 말풍선 최대 너비 증가 */
             word-break: break-word;
         }
 
@@ -113,13 +114,17 @@
             margin-right: auto;
             border-bottom-left-radius: 0.25rem;
             border: 1px solid #e2e8f0;
-            max-width: calc(100% - 2.5rem);
-            /* 프로필 이미지(w-8 + mr-2) 크기를 제외한 나머지 너비 꽉 채움 */
+            max-width: calc(100% - 2.25rem);
+            /* 모바일 말풍선 너비 최대한 꽉 채움 */
             overflow-x: auto;
             /* 내부 요소가 길면 말풍선 내에서 스크롤되도록 */
         }
 
         @media (min-width: 768px) {
+            .chat-bubble {
+                padding: 0.75rem 0.875rem;
+            }
+
             .chat-bubble.user {
                 max-width: 75%;
             }
@@ -653,7 +658,8 @@
 
                 if (hasStructuredTags) {
                     const introMatch = text.match(/\[도입\]([\s\S]*?)(?=\[어원\])/);
-                    const originMatch = text.match(/\[어원\]([\s\S]*?)(?=\[개념\])/);
+                    const originMatch = text.match(/\[어원\]([\s\S]*?)(?=\[어원_설명\]|\[개념\])/);
+                    const originDescMatch = text.match(/\[어원_설명\]([\s\S]*?)(?=\[개념\])/);
                     const conceptMatch = text.match(/\[개념\]([\s\S]*?)(?=\[스토리\])/);
                     const storyMatch = text.match(/\[스토리\]([\s\S]*?)(?=\[추천\])/);
                     const recMatch = text.match(/\[추천\]([\s\S]*)$/);
@@ -667,6 +673,7 @@
                         isStructured: true,
                         intro: introMatch ? introMatch[1].trim() : "",
                         origin: originMatch ? originMatch[1].trim() : "어원 정보가 없습니다.",
+                        originDesc: originDescMatch ? originDescMatch[1].trim() : "",
                         concept: conceptMatch ? conceptMatch[1].trim() : "개념 정보가 없습니다.",
                         story: storyMatch ? storyMatch[1].trim() : "스토리 정보가 없습니다.",
                         recs
@@ -692,11 +699,13 @@
                 3. **수식/화학식**: 반드시 LaTeX 문법을 사용하고 $ 기호로 감싸주세요. 화살표는 $\\rightarrow$ 를 사용하세요.
                 4. **강조 표시**: 핵심 단어나 중요한 설명은 반드시 **별표 두 개로 감싸서**(**강조**) 마크다운 볼드 처리를 해주세요. 특수문자가 그냥 노출되지 않도록 마크다운 문법을 정확히 지켜주세요.
                 
-                **답변 구조 (반드시 아래의 대괄호 묶인 태그를 포함하여 5개의 섹션으로 정확히 나누어 답변하세요):**
+                **답변 구조 (반드시 아래의 대괄호 묶인 태그를 포함하여 6개의 섹션으로 정확히 나누어 답변하세요):**
                 [도입]
                 질문한 단어에 대해 1~2문장으로 아주 간단하고 친절하게 대답하듯 말을 건네주세요. (인사나 자기소개는 생략하고 곧바로 자연스럽게 반응해주세요)
                 [어원]
                 한자(漢字) 또는 영단어 어원을 분석해주세요. 반드시 마크다운 표(Table)로 정리하세요.
+                [어원_설명]
+                위 표에서 분석한 어원을 학생에게 말하듯이 다정하고 짧은 줄글로 풀어서 설명해주세요.
                 [개념]
                 과학적 정의를 명확하게 설명해주세요.
                 [스토리]
@@ -709,7 +718,7 @@
                 당신은 '김수석' 과학 선생님입니다. 학생과 대화 중입니다.
                 
                 **상황별 지침:**
-                1. 학생이 **새로운 과학 개념어나 단어**에 대해 물어본다면, 이전에 설명했던 단어는 무시하고 **새로운 단어에 대해 ([도입], [어원], [개념], [스토리], [추천]) 태그를 사용하여** 완벽하게 새롭게 설명해주세요.
+                1. 학생이 **새로운 과학 개념어나 단어**에 대해 물어본다면, 이전에 설명했던 단어는 무시하고 **새로운 단어에 대해 ([도입], [어원], [어원_설명], [개념], [스토리], [추천]) 태그를 사용하여** 완벽하게 새롭게 설명해주세요.
                 2. 학생이 **이전 설명에 대한 추가 질문(이유, 원리 등)**을 한다면, 형식에 얽매이지 말고 아주 다정하고 친절한 반말로 자연스럽게 원리를 설명해주세요. 단, 마지막에는 반드시 [추천] 태그를 사용하여 연관 개념어 3개를 적어주세요.
                 
                 **공통 핵심 지침:**
@@ -750,6 +759,7 @@
                             content: parsed.content,
                             intro: parsed.intro,
                             origin: parsed.origin,
+                            originDesc: parsed.originDesc,
                             concept: parsed.concept,
                             story: parsed.story,
                             conceptImage: conceptImage,
@@ -795,6 +805,7 @@
                             content: parsed.content,
                             intro: parsed.intro,
                             origin: parsed.origin,
+                            originDesc: parsed.originDesc,
                             concept: parsed.concept,
                             story: parsed.story,
                             conceptImage: conceptImage,
@@ -841,6 +852,7 @@
                             content: parsed.content,
                             intro: parsed.intro,
                             origin: parsed.origin,
+                            originDesc: parsed.originDesc,
                             concept: parsed.concept,
                             story: parsed.story,
                             revealed: 1
@@ -978,7 +990,7 @@
                 <div className="flex flex-col items-center justify-center min-h-[100dvh] px-4 py-6">
                     <div className="bg-white p-8 md:p-12 rounded-[2rem] shadow-xl w-full max-w-lg border-t-8 border-blue-600 flex flex-col justify-center text-center">
                         <div className="mb-8 flex justify-center">
-                            <div className="w-32 h-32 flex items-center justify-center">
+                            <div className="w-24 h-24 md:w-28 md:h-28 flex items-center justify-center">
                                 <img
                                     src="https://res.cloudinary.com/dms5vyofw/image/upload/v1766382489/%E1%84%80%E1%85%B5%E1%86%B7%E1%84%89%E1%85%AE%E1%84%89%E1%85%A5%E1%86%A8%E1%84%8B%E1%85%A1%E1%84%8B%E1%85%B5%E1%84%8F%E1%85%A9%E1%86%AB_%E1%84%85%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%AB_%E1%84%8F%E1%85%A5%E1%86%AF%E1%84%85%E1%85%A51_snx7la.png"
                                     alt="김수석 선생님 캐릭터"
@@ -1072,7 +1084,7 @@
                     </div>
 
                     {/* Chat Area */}
-                    <div id="chat-scroll-container" onScroll={handleScroll} className="flex-1 overflow-y-auto px-3 pb-4 pt-[80px] md:pt-[88px] bg-transparent scrollbar-hide">
+                    <div id="chat-scroll-container" onScroll={handleScroll} className="flex-1 overflow-y-auto px-1.5 md:px-3 pb-4 pt-[80px] md:pt-[88px] bg-transparent scrollbar-hide">
                         {currentLayer?.history.map((msg, idx) => {
                             const isLastMessage = idx === currentLayer.history.length - 1;
                             const showRecommendations = isLastMessage && !isLoading && currentLayer.recommendations?.length > 0 && (!msg.isStructured || msg.revealed >= 3);
@@ -1119,7 +1131,7 @@
                                             )}
 
                                             {/* 1. 어원 */}
-                                            <div className="flex justify-start">
+                                            <div className="flex justify-start mb-2">
                                                 <div className="mr-2 md:mr-3 flex-shrink-0 mt-1">
                                                     {/* 도입부가 있으면 프로필 이미지 대신 여백을 주어 자연스럽게 이어지도록 함 */}
                                                     {msg.intro ? (
@@ -1133,6 +1145,18 @@
                                                     <div className="chat-bubble ai ai-content shadow-sm !mr-0"><div dangerouslySetInnerHTML={{ __html: processContent(msg.origin || msg.content) }} /></div>
                                                 </div>
                                             </div>
+
+                                            {/* 1-1. 어원 설명 (말풍선 추가) */}
+                                            {msg.originDesc && (
+                                                <div className="flex justify-start mb-2">
+                                                    <div className="mr-2 md:mr-3 flex-shrink-0 mt-1">
+                                                        <div className="w-8 h-8 md:w-10 md:h-10 invisible"></div>
+                                                    </div>
+                                                    <div className="flex flex-col max-w-[calc(100%-2.5rem)]">
+                                                        <div className="chat-bubble ai ai-content shadow-sm !mr-0"><div dangerouslySetInnerHTML={{ __html: processContent(msg.originDesc) }} /></div>
+                                                    </div>
+                                                </div>
+                                            )}
 
                                             {/* 개념 버튼 */}
                                             {msg.revealed < 2 && (
