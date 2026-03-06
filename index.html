@@ -16,9 +16,6 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Html2Canvas (For Image Generation) -->
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-
     <!-- Marked (For Markdown Rendering) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
@@ -274,19 +271,6 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* Export Card - Hidden */
-        .word-card-export {
-            background: white;
-            padding: 2.5rem;
-            width: 600px;
-            height: auto;
-            position: fixed;
-            top: -9999px;
-            left: -9999px;
-            z-index: -1;
-            border: 1px solid #e5e7eb;
-        }
-
         /* Animations */
         @keyframes fadeIn {
             from {
@@ -317,9 +301,6 @@
         const SearchIcon = ({ className }) => <i data-lucide="search" className={className || "w-5 h-5"}></i>;
         const SendIcon = ({ className }) => <i data-lucide="send" className={className || "w-5 h-5"}></i>;
         const ChevronLeftIcon = ({ className }) => <i data-lucide="chevron-left" className={className || "w-6 h-6"}></i>;
-        const DownloadIcon = ({ className }) => <i data-lucide="download" className={className || "w-5 h-5"}></i>;
-        const SaveIcon = ({ className }) => <i data-lucide="bookmark-plus" className={className || "w-5 h-5"}></i>;
-        const TrashIcon = ({ className }) => <i data-lucide="trash-2" className={className || "w-5 h-5"}></i>;
         const SparklesIcon = ({ className }) => <i data-lucide="sparkles" className={className || "w-4 h-4 text-amber-500"}></i>;
         const BeakerIcon = ({ className }) => <i data-lucide="flask-conical" className={className || "w-8 h-8 text-blue-600"}></i>;
         const HomeIcon = ({ className }) => <i data-lucide="home" className={className || "w-5 h-5"}></i>;
@@ -328,7 +309,7 @@
         const APP_ID = window.__app_id || 'kim-suseok-science-app';
         // Primary model followed by fallbacks if rate limits or quota are hit
         const FALLBACK_MODELS = [
-            "gemini-3.1-flash-lite-preview",
+            "gemini-3.1-flash-lite",
             "gemini-2.5-flash",
             "gemini-2.5-pro",
             "gemini-2.5-flash-8b"
@@ -342,61 +323,13 @@
             return date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'numeric', day: 'numeric' });
         };
 
-        // --- Hidden Element for Export ---
-        const HiddenExportCard = React.forwardRef((props, ref) => (
-            <div ref={ref} className="word-card-export font-sans">
-                <div className="border-b-4 border-blue-800 pb-6 mb-8 flex justify-between items-end">
-                    <div>
-                        <h1 id="exp-word" className="text-6xl font-black text-blue-900 mb-2 tracking-tight">단어</h1>
-                        <p id="exp-origin" className="text-3xl text-blue-600 font-serif italic">어원</p>
-                    </div>
-                    <div className="text-right">
-                        <div className="text-sm text-slate-500 font-bold uppercase tracking-[0.2em] mb-2">Science Card</div>
-                        <div className="flex items-center justify-end gap-3">
-                            <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center border-2 border-blue-100 text-2xl">
-                                🧪
-                            </div>
-                            <div className="text-right">
-                                <div className="text-xl font-bold text-slate-800">김수석 선생님</div>
-                                <div className="text-sm text-slate-500">과학 단어장</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mb-8 p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                    <h3 className="text-sm font-bold text-slate-400 mb-3 uppercase tracking-wider flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-green-500"></span> Definition
-                    </h3>
-                    <p id="exp-meaning" className="text-2xl text-slate-800 font-bold leading-relaxed">
-                        뜻 설명 영역
-                    </p>
-                </div>
-
-                <div className="bg-amber-50 p-8 rounded-2xl border-2 border-amber-100">
-                    <h3 className="text-lg font-bold text-amber-700 mb-4 flex items-center gap-2">
-                        <span>✨</span> Story Memory
-                    </h3>
-                    <p id="exp-story" className="text-xl text-slate-800 leading-relaxed font-medium">
-                        스토리 영역
-                    </p>
-                </div>
-
-                <div className="mt-8 pt-6 border-t border-slate-100 text-center text-slate-400 text-sm font-medium">
-                    오늘의 과학 지식 하나, 내일의 발견이 됩니다.
-                </div>
-            </div>
-        ));
-
         // --- Main Component ---
         function App() {
             const [user, setUser] = useState(null);
-            const [view, setView] = useState('home'); // 'home', 'chat', 'wordbook'
+            const [view, setView] = useState('home'); // 'home', 'chat'
             const [searchQuery, setSearchQuery] = useState('');
             const [layerStack, setLayerStack] = useState([]); // [{ id, word, history, recommendations }]
             const [isLoading, setIsLoading] = useState(false);
-            const [savedWords, setSavedWords] = useState([]);
-            const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
             // Header Scroll State
             const [showHeader, setShowHeader] = useState(true);
@@ -404,7 +337,6 @@
 
             // Refs
             const chatEndRef = useRef(null);
-            const exportRef = useRef(null);
 
             const currentLayer = layerStack.length > 0 ? layerStack[layerStack.length - 1] : null;
 
@@ -487,29 +419,7 @@
             // --- Icons Effect ---
             useEffect(() => {
                 if (window.lucide) window.lucide.createIcons();
-            }, [view, layerStack, savedWords]);
-
-            // --- Firestore Listener ---
-            useEffect(() => {
-                if (!user || !window.db) return;
-
-                const q = window.query(
-                    window.collection(window.db, 'artifacts', APP_ID, 'users', user.uid, 'wordbook'),
-                    window.orderBy('createdAt', 'desc')
-                );
-
-                const unsubscribe = window.onSnapshot(q, (snapshot) => {
-                    const words = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
-                    setSavedWords(words);
-                }, (error) => {
-                    console.error("Error fetching wordbook:", error);
-                });
-
-                return () => unsubscribe();
-            }, [user]);
+            }, [view, layerStack]);
 
             // --- Scroll to bottom ---
             const scrollToBottom = () => {
@@ -894,96 +804,6 @@
                 }, 50);
             };
 
-            const saveToWordbook = async () => {
-                if (!currentLayer || !user) {
-                    if (!user) alert("로그인 정보를 불러오는 중이야. 잠시만 기다려줘.");
-                    return;
-                }
-
-                setIsLoading(true);
-                try {
-                    const context = currentLayer.history.map(h => h.content).join('\n');
-                    const extractionPrompt = `
-                        다음 대화 내용을 바탕으로 '${currentLayer.word}'에 대한 정보를 JSON 형식으로 추출해.
-                        형식:
-                        {
-                            "word": "${currentLayer.word}",
-                            "origin": "한자 또는 어원 표기 (예: 光合成)",
-                            "meaning": "핵심 정의 한 줄",
-                            "story": "스토리 메모리 요약 (100자 이내, 반말)"
-                        }
-                        대화 내용:
-                        ${context}
-                        응답은 오직 JSON만 출력해.
-                    `;
-
-                    const jsonText = await callGemini(extractionPrompt, "Output ONLY JSON.");
-
-                    let cleanJson = jsonText.replace(/```json/gi, '').replace(/```/g, '').trim();
-                    const startIdx = cleanJson.indexOf('{');
-                    const endIdx = cleanJson.lastIndexOf('}');
-                    if (startIdx !== -1 && endIdx !== -1) {
-                        cleanJson = cleanJson.substring(startIdx, endIdx + 1);
-                    }
-
-                    const data = JSON.parse(cleanJson);
-
-                    await window.addDoc(window.collection(window.db, 'artifacts', APP_ID, 'users', user.uid, 'wordbook'), {
-                        ...data,
-                        createdAt: window.serverTimestamp()
-                    });
-
-                    const toast = document.createElement('div');
-                    toast.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg z-50 animate-fade-in font-bold flex items-center gap-2';
-                    toast.innerHTML = '<span>✅ 단어장에 저장했어!</span>';
-                    document.body.appendChild(toast);
-                    setTimeout(() => toast.remove(), 2000);
-
-                } catch (err) {
-                    console.error("Save error:", err);
-                    alert("저장에 실패했어. 잠시 후 다시 시도해줘.");
-                } finally {
-                    setIsLoading(false);
-                }
-            };
-
-            const downloadCard = async (wordData) => {
-                const exportEl = exportRef.current;
-
-                exportEl.querySelector('#exp-word').innerText = wordData.word;
-                exportEl.querySelector('#exp-origin').innerText = wordData.origin;
-                exportEl.querySelector('#exp-meaning').innerText = wordData.meaning;
-                exportEl.querySelector('#exp-story').innerText = wordData.story;
-
-                try {
-                    const canvas = await html2canvas(exportEl, {
-                        scale: 2,
-                        useCORS: true,
-                        backgroundColor: '#ffffff'
-                    });
-                    const link = document.createElement('a');
-                    link.download = `김수석단어장_${wordData.word}.png`;
-                    link.href = canvas.toDataURL();
-                    link.click();
-                } catch (err) {
-                    console.error("Export failed", err);
-                    alert("이미지 저장에 실패했어.");
-                }
-            };
-
-            const handleDeleteRequest = (id) => {
-                setDeleteConfirmId(id);
-            };
-
-            const handleDeleteConfirm = async (docId) => {
-                try {
-                    await window.deleteDoc(window.doc(window.db, 'artifacts', APP_ID, 'users', user.uid, 'wordbook', docId));
-                    setDeleteConfirmId(null);
-                } catch (err) {
-                    console.error(err);
-                }
-            };
-
             // --- Views ---
 
             const renderHome = () => (
@@ -1017,14 +837,6 @@
                                 <SearchIcon />
                             </button>
                         </form>
-
-                        <button
-                            onClick={() => setView('wordbook')}
-                            className="w-full py-4 bg-white border-2 border-slate-200 text-slate-600 rounded-2xl hover:bg-slate-50 active:bg-slate-100 transition-all flex items-center justify-center gap-2 font-bold text-lg hover:border-slate-300"
-                        >
-                            <BookIcon />
-                            나의 단어장
-                        </button>
                     </div>
                 </div>
             );
@@ -1052,14 +864,6 @@
                             <div className="flex items-center gap-1 -mr-1">
                                 <button onClick={() => { setView('home'); setLayerStack([]); }} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition" title="홈으로">
                                     <HomeIcon className="w-5 h-5" />
-                                </button>
-                                <button
-                                    onClick={saveToWordbook}
-                                    disabled={isLoading}
-                                    className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full transition shadow-sm disabled:opacity-50 disabled:shadow-none"
-                                    title="단어장 저장"
-                                >
-                                    <SaveIcon className="w-5 h-5" />
                                 </button>
                             </div>
                         </div>
@@ -1310,90 +1114,10 @@
                 </div>
             );
 
-            const renderWordbook = () => (
-                <div className="min-h-[100dvh] bg-transparent pb-20">
-                    <div className="bg-white/90 backdrop-blur-md sticky top-0 z-10 border-b border-slate-200 shadow-sm">
-                        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-                            <button onClick={() => setView('home')} className="flex items-center gap-1 text-slate-500 hover:text-blue-600 transition -ml-2 p-2 rounded-lg hover:bg-slate-50">
-                                <ChevronLeftIcon />
-                                <span className="font-bold">홈으로</span>
-                            </button>
-                            <h1 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                나의 단어장
-                                <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full">{savedWords.length}</span>
-                            </h1>
-                            <div className="w-8"></div>
-                        </div>
-                    </div>
-
-                    <div className="max-w-3xl mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {savedWords.length === 0 ? (
-                            <div className="col-span-1 md:col-span-2 flex flex-col items-center justify-center py-24 text-slate-400">
-                                <div className="bg-white p-6 rounded-full mb-4 shadow-sm border border-slate-100">
-                                    <BookIcon className="w-12 h-12 opacity-30" />
-                                </div>
-                                <p className="text-center font-medium text-lg">아직 저장된 단어가 없어.<br /><span className="text-sm mt-2 block opacity-70">선생님과 대화하고 단어를 저장해봐!</span></p>
-                            </div>
-                        ) : (
-                            savedWords.map((word) => (
-                                <div key={word.id} className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-slate-100 hover:border-blue-200 transition-all flex flex-col h-full group">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div>
-                                            <h3 className="text-2xl font-bold text-slate-800 tracking-tight group-hover:text-blue-700 transition-colors">{word.word}</h3>
-                                            <p className="text-blue-600 font-serif italic mt-1 font-medium">{word.origin}</p>
-                                        </div>
-                                        <div className="flex gap-1">
-                                            <button onClick={() => downloadCard(word)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition" title="카드 저장">
-                                                <DownloadIcon className="w-5 h-5" />
-                                            </button>
-
-                                            {deleteConfirmId === word.id ? (
-                                                <div className="flex items-center bg-red-50 rounded-full p-1 border border-red-100 animate-fade-in absolute right-4 top-4 shadow-md z-10">
-                                                    <button onClick={() => handleDeleteConfirm(word.id)} className="text-xs font-bold text-white bg-red-500 px-3 py-1.5 rounded-full mr-1">삭제</button>
-                                                    <button onClick={() => setDeleteConfirmId(null)} className="text-xs font-medium text-slate-500 px-2 py-1.5 hover:bg-red-100 rounded-full">취소</button>
-                                                </div>
-                                            ) : (
-                                                <button onClick={() => handleDeleteRequest(word.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition" title="삭제">
-                                                    <TrashIcon className="w-5 h-5" />
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="mb-4 bg-slate-50 p-4 rounded-xl border border-slate-100/50">
-                                        <div className="flex items-center gap-1.5 mb-2">
-                                            <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Definition</span>
-                                        </div>
-                                        <p className="text-slate-700 font-medium leading-relaxed">{word.meaning}</p>
-                                    </div>
-
-                                    <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-100/50 mt-auto">
-                                        <div className="flex items-center gap-1.5 mb-2 text-amber-700 font-bold text-xs uppercase tracking-wider">
-                                            <SparklesIcon className="w-3.5 h-3.5" />
-                                            <span>Story Memory</span>
-                                        </div>
-                                        <p className="text-slate-700 text-sm leading-relaxed">
-                                            {word.story}
-                                        </p>
-                                    </div>
-                                    <div className="mt-4 pt-3 border-t border-slate-50 text-right text-xs text-slate-300 font-medium flex justify-between items-center">
-                                        <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-400">Science Card</span>
-                                        {formatDate(word.createdAt)}
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </div>
-            );
-
             return (
                 <div className="font-sans antialiased">
-                    <HiddenExportCard ref={exportRef} />
                     {view === 'home' && renderHome()}
                     {view === 'chat' && renderChat()}
-                    {view === 'wordbook' && renderWordbook()}
                 </div>
             );
         }
